@@ -1,6 +1,17 @@
 import torch
 from geoopt.manifolds import PoincareBall as PoincareBallParent
-from geoopt.manifolds.poincare.math import _lambda_x, arsinh, tanh
+
+# OLD (breaks on geoopt 0.5.x):
+# from geoopt.manifolds.poincare.math import _lambda_x, arsinh, tanh
+
+# NEW (works on 0.5.x and older):
+try:
+    # legacy path
+    from geoopt.manifolds.poincare.math import _lambda_x, arsinh, tanh
+except ModuleNotFoundError:
+    # geoopt 0.5.x layout
+    from geoopt.manifolds.stereographic import math as smath
+    _lambda_x, arsinh, tanh = smath._lambda_x, smath.arsinh, smath.tanh
 
 MIN_NORM = 1e-15
 
