@@ -91,13 +91,31 @@ torch.manual_seed(args.seed)
 torch.backends.cudnn.deterministic = True
 
 # Create directory for experiment if necessary
-directory_name = 'experiments/{}'.format(args.name)
-if args.name != '.':
-    if not os.path.exists(directory_name):
-        os.makedirs(directory_name)
-    runPath = mkdtemp(prefix=runId, dir=directory_name)
+
+#OLD VERSION
+# directory_name = 'experiments/{}'.format(args.name)
+# if args.name != '.':
+#     if not os.path.exists(directory_name):
+#         os.makedirs(directory_name)
+#     runPath = mkdtemp(prefix=runId, dir=directory_name)
+# else:
+#     runPath = mkdtemp(prefix=runId, dir=directory_name)
+
+#NEW VERSION
+base_dir = os.path.join(os.path.dirname(__file__), "..", "experiments")
+base_dir = os.path.abspath(base_dir)
+os.makedirs(base_dir, exist_ok=True)
+
+# Build final run directory name
+if args.name == '.' or not args.name:
+    directory_name = base_dir
 else:
-    runPath = mkdtemp(prefix=runId, dir=directory_name)
+    directory_name = os.path.join(base_dir, args.name)
+    os.makedirs(directory_name, exist_ok=True)
+
+# Create temp folder inside the chosen experiment directory
+runPath = mkdtemp(prefix=runId, dir=directory_name)
+
 sys.stdout = Logger('{}/run.log'.format(runPath))
 print('RunID:', runId)
 
