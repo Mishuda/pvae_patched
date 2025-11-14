@@ -57,12 +57,17 @@ class VAE(nn.Module):
             samples.view(-1, *samples.size()[3:])
 
     def reconstruct(self, data):
+        #
         self.eval()
         with torch.no_grad():
-            qz_x = self.qz_x(*self.enc(data))
-            px_z_params = self.dec(qz_x.rsample(torch.Size([1])).squeeze(0))
-
+            #
+            qz_x = self.qz_x(*self.enc(data))        # q(z|x)
+            z = qz_x.rsample(torch.Size([1]))        # [S=1, B, z]
+            px_z_params = self.dec(z)                # decoder expects [S, B, z]
+            #NOWW remove the sample dimension (since S=1)
+            px_z_params = px_z_params.squeeze(0)     # [B, ...]
         return get_mean_param(px_z_params)
+
 
     def forward(self, x, K=1):
         qz_x = self.qz_x(*self.enc(x))
