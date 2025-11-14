@@ -43,23 +43,62 @@ class WrappedNormal(torch.distributions.Distribution):
         with torch.no_grad():
             return self.rsample(shape)
 
+    
+
+    # def rsample(self, sample_shape=torch.Size()):
+    #     shape = self._extended_shape(sample_shape)
+    #     v = self.scale * _standard_normal(shape, dtype=self.loc.dtype, device=self.loc.device)
+    #     self.manifold.assert_check_vector_on_tangent(self.manifold.zero, v)
+    #     v = v / self.manifold.lambda_x(self.manifold.zero, keepdim=True)
+    #     u = self.manifold.transp(self.manifold.zero, self.loc, v)
+    #     z = self.manifold.expmap(self.loc, u)
+    #     return z
+
     def rsample(self, sample_shape=torch.Size()):
+
         shape = self._extended_shape(sample_shape)
-        v = self.scale * _standard_normal(shape, dtype=self.loc.dtype, device=self.loc.device)
-        self.manifold.assert_check_vector_on_tangent(self.manifold.zero, v)
-        v = v / self.manifold.lambda_x(self.manifold.zero, keepdim=True)
-        u = self.manifold.transp(self.manifold.zero, self.loc, v)
+        device = self.loc.device
+        v = self.scale * _standard_normal(shape, dtype=self.loc.dtype, device=device)
+
+        zero = self.manifold.zero.to(device)
+        self.manifold.assert_check_vector_on_tangent(zero, v)
+
+        v = v / self.manifold.lambda_x(zero, keepdim=True)
+        u = self.manifold.transp(zero, self.loc, v)
         z = self.manifold.expmap(self.loc, u)
         return z
 
+    
+
+    # def log_prob(self, x):
+    #     shape = x.shape
+    #     loc = self.loc.unsqueeze(0).expand(x.shape[0], *self.batch_shape, self.manifold.coord_dim)
+    #     if len(shape) < len(loc.shape): x = x.unsqueeze(1)
+    #     v = self.manifold.logmap(loc, x)
+    #     v = self.manifold.transp(loc, self.manifold.zero, v)
+    #     u = v * self.manifold.lambda_x(self.manifold.zero, keepdim=True)
+    #     norm_pdf = Normal(torch.zeros_like(self.scale), self.scale).log_prob(u).sum(-1, keepdim=True)
+    #     logdetexp = self.manifold.logdetexp(loc, x, keepdim=True)
+    #     result = norm_pdf - logdetexp
+    #     return result
+
     def log_prob(self, x):
+        #
+        device = self.loc.device
         shape = x.shape
         loc = self.loc.unsqueeze(0).expand(x.shape[0], *self.batch_shape, self.manifold.coord_dim)
-        if len(shape) < len(loc.shape): x = x.unsqueeze(1)
+        if len(shape) < len(loc.shape):
+            #
+            x = x.unsqueeze(1)
+
+        zero = self.manifold.zero.to(device)
+
         v = self.manifold.logmap(loc, x)
-        v = self.manifold.transp(loc, self.manifold.zero, v)
-        u = v * self.manifold.lambda_x(self.manifold.zero, keepdim=True)
+        v = self.manifold.transp(loc, zero, v)
+        u = v * self.manifold.lambda_x(zero, keepdim=True)
+
         norm_pdf = Normal(torch.zeros_like(self.scale), self.scale).log_prob(u).sum(-1, keepdim=True)
         logdetexp = self.manifold.logdetexp(loc, x, keepdim=True)
         result = norm_pdf - logdetexp
         return result
+
