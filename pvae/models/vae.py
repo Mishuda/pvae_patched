@@ -65,8 +65,12 @@ class VAE(nn.Module):
             z = qz_x.rsample(torch.Size([1]))        # [S=1, B, z]
             px_z_params = self.dec(z)                # decoder expects [S, B, z]
             #NOWW remove the sample dimension (since S=1)
-            px_z_params = px_z_params.squeeze(0)     # [B, ...]
+            if isinstance(px_z_params, tuple):
+                px_z_params = tuple(p.squeeze(0) for p in px_z_params) #squeeze S from each param
+            else:
+                px_z_params = px_z_params.squeeze(0)
         return get_mean_param(px_z_params)
+
 
 
     def forward(self, x, K=1):
