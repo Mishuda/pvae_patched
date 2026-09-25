@@ -1,3 +1,15 @@
+# About this fork
+
+This is a **patched fork** of [emilemathieu/pvae](https://github.com/emilemathieu/pvae), the reference implementation accompanying *Continuous Hierarchical Representations with Poincaré Variational Auto-Encoders*.
+
+I used this fork during an M2 deep-learning project exploring **Euclidean versus Poincaré latent representations of sepsis time-series data**. My commits mainly address compatibility and implementation issues encountered while getting the Poincaré VAE code running in that project.
+
+For the project-specific training sandbox and adaptation to multivariate clinical time series, see [`dl-sepsis-sandbox`](https://github.com/Mishuda/dl-sepsis-sandbox).
+
+---
+
+## Upstream README
+
 # [Continuous Hierarchical Representations with Poincaré Variational Auto-Encoders](https://arxiv.org/abs/1901.06033)
 
 ![demonstrative figure](images/tree.png)
